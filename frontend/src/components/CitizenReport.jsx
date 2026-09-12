@@ -553,8 +553,8 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
         <div style={{
           fontSize: 15,
           lineHeight: 1.7,
-          color: '#334155',
-          backgroundColor: '#f8fafc',
+          color: 'var(--text-main)',
+          backgroundColor: 'var(--surface-alt)',
           padding: '16px 20px',
           borderRadius: 'var(--radius-md)',
           borderLeft: '4px solid var(--accent)'
@@ -572,7 +572,7 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
         gap: 8,
         marginBottom: 24,
         padding: '6px',
-        backgroundColor: '#f1f5f9',
+        backgroundColor: 'var(--surface-alt)',
         borderRadius: 'var(--radius-md)',
         border: '1px solid var(--border)',
         overflowX: 'auto'
@@ -811,7 +811,7 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
                   <div 
                     key={idx}
                     style={{
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: 'var(--surface-alt)',
                       border: '1px solid var(--border)',
                       borderRadius: 'var(--radius-md)',
                       padding: '12px 14px',
@@ -1053,10 +1053,10 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
                     key={idx}
                     style={{
                       fontSize: 13,
-                      color: '#334155',
+                      color: 'var(--text-main)',
                       lineHeight: 1.5,
                       padding: '10px 12px',
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: 'var(--surface-alt)',
                       borderRadius: 'var(--radius-sm)',
                       borderLeft: '3px solid var(--accent)'
                     }}
@@ -1086,12 +1086,12 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
                         alignItems: 'flex-start',
                         gap: 10,
                         fontSize: 13,
-                        color: isChecked ? 'var(--text-muted)' : '#1e293b',
+                        color: isChecked ? 'var(--text-muted)' : 'var(--text-main)',
                         textDecoration: isChecked ? 'line-through' : 'none',
                         cursor: 'pointer',
                         padding: '8px 10px',
                         borderRadius: 'var(--radius-sm)',
-                        backgroundColor: isChecked ? '#f1f5f9' : '#ffffff',
+                        backgroundColor: isChecked ? 'var(--surface-alt)' : 'var(--surface)',
                         transition: 'all 0.15s ease'
                       }}
                     >
@@ -1116,7 +1116,7 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
         marginTop: 36,
         padding: '20px 24px',
         borderRadius: 'var(--radius-md)',
-        backgroundColor: '#f8fafc',
+        backgroundColor: 'var(--surface-alt)',
         border: '1px solid var(--border)',
         textAlign: 'center',
         color: 'var(--text-muted)',

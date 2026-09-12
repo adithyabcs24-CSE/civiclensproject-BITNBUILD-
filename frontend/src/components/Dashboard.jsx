@@ -287,7 +287,7 @@ export default function Dashboard({ onStartAnalysis, onOpenReport, onOpenPipelin
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
               <thead>
-                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                <tr style={{ backgroundColor: 'var(--surface-alt)', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   <th style={{ padding: '12px 20px' }}>Document</th>
                   <th style={{ padding: '12px 16px' }}>Target Locality</th>
                   <th style={{ padding: '12px 16px' }}>Pipeline Status</th>
@@ -304,13 +304,13 @@ export default function Dashboard({ onStartAnalysis, onOpenReport, onOpenPipelin
                     <tr 
                       key={a.id}
                       style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s' }}
-                      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--surface-alt)'}
                       onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
                       <td style={{ padding: '14px 20px', fontWeight: 600, color: 'var(--text-main)' }}>
                         {a.document_title || `Document ${a.document_id.substring(0, 8)}...`}
                       </td>
-                      <td style={{ padding: '14px 16px', color: '#334155' }}>
+                      <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>
                         📍 {a.locality}
                       </td>
                       <td style={{ padding: '14px 16px' }}>

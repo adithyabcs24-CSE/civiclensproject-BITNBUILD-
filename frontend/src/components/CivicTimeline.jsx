@@ -391,7 +391,7 @@ export default function CivicTimeline({ analysisId, documentTitle, onOpenEvidenc
 
       {/* VIEW 1: PLAIN TEXT FORMAT (AS REQUESTED BY USER) */}
       {viewMode === 'plaintext' && (
-        <div className="card" style={{ padding: 24, marginBottom: 24, backgroundColor: '#ffffff' }}>
+        <div className="card" style={{ padding: 24, marginBottom: 24, backgroundColor: 'var(--surface)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 16 }}>📋</span>
@@ -410,9 +410,9 @@ export default function CivicTimeline({ analysisId, documentTitle, onOpenEvidenc
                 padding: '6px 14px',
                 fontSize: 12,
                 fontWeight: 700,
-                backgroundColor: copied ? '#dcfce7' : '#f1f5f9',
-                color: copied ? '#166534' : '#334155',
-                border: `1px solid ${copied ? '#86efac' : '#cbd5e1'}`,
+                backgroundColor: copied ? '#dcfce7' : 'var(--surface-alt)',
+                color: copied ? '#166534' : 'var(--text-main)',
+                border: `1px solid ${copied ? '#86efac' : 'var(--border)'}`,
                 borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease'
@@ -427,9 +427,9 @@ export default function CivicTimeline({ analysisId, documentTitle, onOpenEvidenc
             fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
             fontSize: 14,
             lineHeight: 1.7,
-            color: '#1e293b',
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0',
+            color: 'var(--text-main)',
+            backgroundColor: 'var(--surface-alt)',
+            border: '1px solid var(--border)',
             borderRadius: 'var(--radius-md)',
             padding: '20px 24px',
             whiteSpace: 'pre-wrap',
@@ -562,12 +562,12 @@ export default function CivicTimeline({ analysisId, documentTitle, onOpenEvidenc
 
                   {/* Milestone Card */}
                   <div style={{
-                    backgroundColor: isDeadline ? '#fffdfb' : '#ffffff',
-                    border: `1px solid ${isDeadline ? '#fed7aa' : '#e2e8f0'}`,
+                    backgroundColor: isDeadline ? 'var(--surface-alt)' : 'var(--surface)',
+                    border: `1px solid ${isDeadline ? 'var(--conf-low-border)' : 'var(--border)'}`,
                     borderLeft: `4px solid ${dotBg}`,
                     borderRadius: 'var(--radius-md)',
                     padding: '16px 20px',
-                    boxShadow: isDeadline ? '0 2px 8px rgba(234, 88, 12, 0.08)' : '0 1px 3px rgba(0,0,0,0.04)'
+                    boxShadow: isDeadline ? '0 2px 8px rgba(234, 88, 12, 0.08)' : 'var(--shadow-sm)'
                   }}>
                     {/* Top Row: Date & Phase */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
@@ -575,7 +575,7 @@ export default function CivicTimeline({ analysisId, documentTitle, onOpenEvidenc
                         <span style={{
                           fontSize: 14,
                           fontWeight: 800,
-                          color: isDeadline ? '#c2410c' : 'var(--primary)',
+                          color: isDeadline ? 'var(--accent)' : 'var(--primary)',
                           letterSpacing: '-0.2px'
                         }}>
                           📅 {item.date_display || item.date}
@@ -584,8 +584,8 @@ export default function CivicTimeline({ analysisId, documentTitle, onOpenEvidenc
                           <span style={{
                             fontSize: 11,
                             fontWeight: 600,
-                            backgroundColor: '#f1f5f9',
-                            color: '#475569',
+                            backgroundColor: 'var(--surface-alt)',
+                            color: 'var(--text-muted)',
                             padding: '2px 8px',
                             borderRadius: 4
                           }}>

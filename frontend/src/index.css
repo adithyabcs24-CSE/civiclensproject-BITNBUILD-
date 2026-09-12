@@ -1,4 +1,5 @@
-:root {
+/* 1. Light Civic Theme (Default) */
+:root, [data-theme="light"] {
   --primary: #1e3a8a;
   --primary-hover: #172554;
   --accent: #0284c7;
@@ -39,6 +40,184 @@
   --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.1), 0 4px 10px -2px rgba(0,0,0,0.04);
 }
 
+/* 2. Midnight Dark Theme */
+[data-theme="dark"] {
+  --primary: #38bdf8;
+  --primary-hover: #0284c7;
+  --accent: #60a5fa;
+  --accent-light: #1e293b;
+  --teal: #2dd4bf;
+  --teal-light: #134e4a;
+  --bg: #0b0f19;
+  --surface: #131b2e;
+  --surface-alt: #1e293b;
+  --border: #24324a;
+  --border-focus: #38bdf8;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --conf-high-bg: #064e3b;
+  --conf-high-text: #6ee7b7;
+  --conf-high-border: #047857;
+
+  --conf-med-bg: #78350f;
+  --conf-med-text: #fde68a;
+  --conf-med-border: #b45309;
+
+  --conf-low-bg: #7c2d12;
+  --conf-low-text: #fed7aa;
+  --conf-low-border: #c2410c;
+
+  --conf-inferred-bg: #3b0764;
+  --conf-inferred-text: #ddd6fe;
+  --conf-inferred-border: #6b21a8;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.5);
+}
+
+/* 3. Eco Emerald Theme */
+[data-theme="emerald"] {
+  --primary: #065f46;
+  --primary-hover: #047857;
+  --accent: #059669;
+  --accent-light: #ecfdf5;
+  --teal: #0d9488;
+  --teal-light: #ccfbf1;
+  --bg: #f0fdf4;
+  --surface: #ffffff;
+  --surface-alt: #dcfce7;
+  --border: #bbf7d0;
+  --border-focus: #10b981;
+  --text-main: #064e3b;
+  --text-muted: #166534;
+  --text-dim: #4ade80;
+
+  --conf-high-bg: #dcfce7;
+  --conf-high-text: #166534;
+  --conf-high-border: #86efac;
+
+  --conf-med-bg: #fef9c3;
+  --conf-med-text: #854d0e;
+  --conf-med-border: #fef08a;
+
+  --conf-low-bg: #ffedd5;
+  --conf-low-text: #9a3412;
+  --conf-low-border: #fed7aa;
+
+  --conf-inferred-bg: #f3e8ff;
+  --conf-inferred-text: #6b21a8;
+  --conf-inferred-border: #d8b4fe;
+}
+
+/* 4. Sunset Amber Theme */
+[data-theme="sunset"] {
+  --primary: #9a3412;
+  --primary-hover: #7c2d12;
+  --accent: #d97706;
+  --accent-light: #fef3c7;
+  --teal: #b45309;
+  --teal-light: #ffedd5;
+  --bg: #fffbf5;
+  --surface: #ffffff;
+  --surface-alt: #fef3c7;
+  --border: #fed7aa;
+  --border-focus: #f59e0b;
+  --text-main: #451a03;
+  --text-muted: #78350f;
+  --text-dim: #fbbf24;
+
+  --conf-high-bg: #ecfdf5;
+  --conf-high-text: #065f46;
+  --conf-high-border: #a7f3d0;
+
+  --conf-med-bg: #fef3c7;
+  --conf-med-text: #92400e;
+  --conf-med-border: #fde68a;
+
+  --conf-low-bg: #ffedd5;
+  --conf-low-text: #9a3412;
+  --conf-low-border: #fdba74;
+
+  --conf-inferred-bg: #fae8ff;
+  --conf-inferred-text: #86198f;
+  --conf-inferred-border: #f0abfc;
+}
+
+/* 5. Cyber Violet Theme */
+[data-theme="cyber"] {
+  --primary: #c084fc;
+  --primary-hover: #a855f7;
+  --accent: #22d3ee;
+  --accent-light: #18181b;
+  --teal: #2dd4bf;
+  --teal-light: #1e1e24;
+  --bg: #09090b;
+  --surface: #121216;
+  --surface-alt: #1c1c24;
+  --border: #272732;
+  --border-focus: #a855f7;
+  --text-main: #fafafa;
+  --text-muted: #a1a1aa;
+  --text-dim: #71717a;
+
+  --conf-high-bg: #064e3b;
+  --conf-high-text: #6ee7b7;
+  --conf-high-border: #059669;
+
+  --conf-med-bg: #713f12;
+  --conf-med-text: #fef08a;
+  --conf-med-border: #ca8a04;
+
+  --conf-low-bg: #7c2d12;
+  --conf-low-text: #fdba74;
+  --conf-low-border: #ea580c;
+
+  --conf-inferred-bg: #4c1d95;
+  --conf-inferred-text: #e9d5ff;
+  --conf-inferred-border: #9333ea;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 14px rgba(168, 85, 247, 0.15);
+  --shadow-lg: 0 10px 30px rgba(6, 182, 212, 0.15);
+}
+
+/* 6. Gov Parchment Theme */
+[data-theme="parchment"] {
+  --primary: #451a03;
+  --primary-hover: #291002;
+  --accent: #b45309;
+  --accent-light: #fefce8;
+  --teal: #78350f;
+  --teal-light: #fef9c3;
+  --bg: #fcfaf4;
+  --surface: #fffdf7;
+  --surface-alt: #f5f0e1;
+  --border: #e7dec8;
+  --border-focus: #d97706;
+  --text-main: #261e14;
+  --text-muted: #665544;
+  --text-dim: #99846e;
+
+  --conf-high-bg: #e6f4ea;
+  --conf-high-text: #137333;
+  --conf-high-border: #ceead6;
+
+  --conf-med-bg: #fef7e0;
+  --conf-med-text: #b06000;
+  --conf-med-border: #feefc3;
+
+  --conf-low-bg: #fce8e6;
+  --conf-low-text: #c5221f;
+  --conf-low-border: #fad2cf;
+
+  --conf-inferred-bg: #f3e8fd;
+  --conf-inferred-text: #7627bb;
+  --conf-inferred-border: #e8d0fb;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -63,6 +242,14 @@ button {
 input, select, textarea {
   font-family: inherit;
   font-size: 14px;
+  background-color: var(--surface);
+  color: var(--text-main);
+  border-color: var(--border);
+}
+
+select option {
+  background-color: var(--surface);
+  color: var(--text-main);
 }
 
 a {

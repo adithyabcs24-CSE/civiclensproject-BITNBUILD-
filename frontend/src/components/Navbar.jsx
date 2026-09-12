@@ -1,9 +1,10 @@
 import React from 'react';
+import ThemeSelector from './ThemeSelector';
 
 export default function Navbar({ currentView, onNavigate, onNewAnalysis, unreadAlertsCount = 0, onOpenAlerts }) {
   return (
     <header style={{
-      backgroundColor: '#ffffff',
+      backgroundColor: 'var(--surface)',
       borderBottom: '1px solid var(--border)',
       position: 'sticky',
       top: 0,
@@ -107,6 +108,9 @@ export default function Navbar({ currentView, onNavigate, onNewAnalysis, unreadA
               </span>
             )}
           </button>
+
+          {/* Appearance Theme Selector */}
+          <ThemeSelector />
 
           <button
             onClick={onNewAnalysis}
