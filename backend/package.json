@@ -1,0 +1,29 @@
+{
+  "name": "civiclens-backend",
+  "version": "1.0.0",
+  "description": "CivicLens AI backend - Node.js + Express",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "seed": "node src/seed.js",
+    "test:part1": "node src/verify.js",
+    "test:part2": "node src/verify_part2.js",
+    "test:part3": "node src/verify_part3.js",
+    "test:final": "node src/verify_final.js",
+    "test": "node src/verify.js && node src/verify_part2.js && node src/verify_part3.js && node src/verify_final.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "better-sqlite3": "^9.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}

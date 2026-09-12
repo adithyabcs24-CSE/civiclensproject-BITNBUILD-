@@ -1,0 +1,164 @@
+CITY OF MAPLEWOOD HEIGHTS
+DEPARTMENT OF URBAN PLANNING AND ZONING SERVICES
+
+ZONING AMENDMENT AND DEVELOPMENT PROPOSAL
+File No.: ZA-2024-0047
+
+Proposal Title: Maplewood Heights Transit-Oriented Mixed-Use Overlay District
+
+Submitted by: Office of the Director of Planning, City of Maplewood Heights
+Date: October 14, 2024
+Contact: Director Celia Okonkwo, Department of Urban Planning and Zoning Services
+
+
+EXECUTIVE SUMMARY
+
+The City of Maplewood Heights proposes to establish a Transit-Oriented Mixed-Use Overlay District (TOMOD) along the Greenway Corridor, a 2.3-mile stretch connecting the Maplewood Heights Central Station to the Harborview Interchange. This overlay district will supersede existing residential-only zoning designations in the affected parcels and permit a mix of moderate-density residential, neighborhood-commercial, and civic uses within a quarter-mile radius of each of the three identified station nodes.
+
+The proposal responds to the findings of the Maplewood Heights 2040 Comprehensive Plan, which identified the Greenway Corridor as a high-priority area for infill development, increased housing supply, and reduction of vehicle miles traveled (VMT). A companion Environmental Review (File No.: ER-2024-0031) is being prepared concurrently by the Department of Public Works and Environmental Services.
+
+
+SECTION 1: BACKGROUND AND CONTEXT
+
+1.1 Existing Conditions
+
+The Greenway Corridor currently contains approximately 847 parcels, the majority of which are zoned Single-Family Residential (SFR-1 and SFR-2). Commercial uses are limited to a small strip on Holloway Avenue designated Neighborhood Commercial (NC-1). Residential density averages 4.2 units per acre across the corridor.
+
+The corridor is served by three Maplewood Regional Transit Authority (MRTA) bus rapid transit (BRT) stations: Central Station (highest ridership), Elm Street Station (moderate ridership), and Millbrook Road Station (lower ridership, with future planned capacity upgrade). Average daily boardings across the three stations total approximately 3,800 riders.
+
+1.2 Planning History
+
+Maplewood Heights last updated its General Plan in 2019. Since that update, the city has experienced a net population increase of 8,200 residents (a 6.4% increase over five years) and a corresponding shortage of approximately 2,100 housing units, as documented in the 2023 Regional Housing Needs Assessment (RHNA) prepared by the Maplewood County Planning Collaborative.
+
+1.3 Relationship to Regional Policy
+
+This proposal is consistent with the Maplewood County General Plan Housing Element, the State of Cascadia (fictional) Housing Accountability Guidelines, and the MRTA Strategic Transit Plan 2025-2035.
+
+
+SECTION 2: PROPOSED ZONING CHANGES
+
+2.1 Overlay District Boundaries
+
+The Transit-Oriented Mixed-Use Overlay District (TOMOD) shall apply to all parcels within a 1,320-foot (quarter-mile) radius of each of the following station nodes:
+  - Node A: Maplewood Heights Central Station (Anchor Node)
+  - Node B: Elm Street Station
+  - Node C: Millbrook Road Station
+
+Parcels that fall within the overlay boundary but are currently designated as Public/Quasi-Public (PQP) or Open Space (OS) shall retain their base zoning designations and shall not be subject to the overlay standards.
+
+2.2 Permitted Land Uses Under TOMOD
+
+Within the overlay district, the following uses shall be permitted by right (no discretionary approval required) on parcels of 5,000 square feet or greater:
+
+  (a) Multi-family residential: up to 45 units per acre
+  (b) Mixed-use residential-commercial: ground-floor commercial required on parcels fronting Greenway Boulevard, Holloway Avenue, or Elm Street
+  (c) Neighborhood-serving retail (under 15,000 sq ft gross floor area per tenant)
+  (d) Restaurants, cafes, and food service establishments
+  (e) Personal services and professional offices
+  (f) Child care centers and small-scale community facilities
+
+The following uses shall require a Conditional Use Permit (CUP):
+  (a) Drive-through facilities of any kind
+  (b) Big-box retail (15,000 sq ft gross floor area or greater per tenant)
+  (c) Automotive service and repair
+  (d) Fuel stations
+
+2.3 Development Standards
+
+  Maximum Building Height:
+    - Anchor Node (Node A) within 600 feet: 65 feet (approximately 6 stories)
+    - All TOMOD parcels beyond 600 feet from Node A: 45 feet (approximately 4 stories)
+    - Millbrook Road Station (Node C) only: 35 feet (approximately 3 stories) pending infrastructure upgrade
+
+  Floor-Area Ratio (FAR):
+    - Maximum FAR: 2.5 for mixed-use development
+    - Minimum FAR: 1.0 for any new construction over 5,000 sq ft
+
+  Setbacks:
+    - Front setback: 0-8 feet (build-to line to encourage pedestrian-oriented design)
+    - Side setback: 5 feet minimum except on zero-lot-line configurations
+    - Rear setback: 10 feet minimum
+
+  Parking:
+    - Minimum off-street parking requirements are waived for all TOMOD parcels within 600 feet of a station node
+    - Maximum parking ratio: 0.75 spaces per residential unit; 1 space per 1,000 sq ft commercial
+    - Bicycle parking required at 1 space per 2 residential units; 1 space per 1,000 sq ft commercial
+
+  Affordable Housing Requirement:
+    - Projects with 10 or more units must provide a minimum of 15% of units as income-restricted affordable units serving households at or below 80% of Area Median Income (AMI)
+    - Alternative fee-in-lieu option available at $22,500 per required affordable unit, deposited to the Maplewood Heights Affordable Housing Trust Fund
+
+2.4 Design Standards
+
+All new development within TOMOD shall comply with the Greenway Corridor Design Guidelines (City of Maplewood Heights, 2022), including:
+  - Active ground-floor uses along designated pedestrian streets
+  - Street trees at 30-foot intervals along all public frontages
+  - Building articulation requirements to avoid blank wall segments exceeding 25 linear feet
+  - Minimum 60% glazing on ground-floor commercial frontages
+
+
+SECTION 3: INFRASTRUCTURE AND PUBLIC SERVICES
+
+3.1 Transportation and Mobility
+
+The Department of Public Works has conducted a preliminary Transportation Demand Analysis (TDA-2024-18) indicating that buildout of the TOMOD at maximum permitted density would generate approximately 4,200 additional daily vehicle trips. Mitigation measures include:
+  - Expansion of the Elm Street protected bicycle lane network (approved in FY2025 Capital Budget)
+  - Pedestrian safety improvements at the Millbrook Road/Greenway Boulevard intersection
+  - Coordination with MRTA on potential increase in BRT service frequency from every 12 minutes to every 8 minutes during peak hours
+
+3.2 Water and Sewer
+
+The Maplewood Heights Public Utilities Authority (MHPUA) has confirmed that existing water and sewer infrastructure in the corridor has adequate capacity for the projected buildout, with the exception of the Millbrook Road sub-district (Node C area), which will require a sewer main upsizing project estimated at $1.4 million (to be funded through development impact fees).
+
+3.3 Schools and Parks
+
+Based on enrollment projections from the Maplewood Heights Unified School District (MHUSD), buildout of the corridor may generate approximately 340 additional K-12 students. MHUSD has indicated that Greenway Elementary and Holloway Middle School have sufficient capacity to absorb projected enrollment. Parkland dedication or in-lieu fees will be required per the City's Park Dedication Ordinance (Section 16.40 of the Municipal Code).
+
+
+SECTION 4: ENVIRONMENTAL REVIEW
+
+This proposal is subject to environmental review under the Cascadia Environmental Quality Act (CEQA-equivalent, fictional). A companion Initial Study has been prepared (File No.: ER-2024-0031) and is available for public review at the Department of Urban Planning and Zoning Services office and on the City website at www.maplewoodheights.gov/planning (fictional).
+
+Key areas of environmental analysis include:
+  - Traffic and transportation (see Section 3.1 above)
+  - Noise impacts on existing residential uses adjacent to mixed-use buildings
+  - Urban heat island effects and tree canopy preservation
+  - Greenhouse gas emissions (projected net reduction relative to baseline due to VMT reduction)
+
+
+SECTION 5: PUBLIC OUTREACH AND NEXT STEPS
+
+5.1 Community Engagement Summary
+
+The Department of Urban Planning and Zoning Services conducted three community workshops in August and September 2024. Attendance totaled approximately 280 residents. Key themes from community input:
+  - Strong support (73% of respondents) for increased housing supply near transit
+  - Concerns about construction impacts on existing small businesses on Holloway Avenue
+  - Requests for stronger design standards at the Node A anchor area
+  - Requests for clarity on affordable housing requirements and enforcement mechanisms
+
+5.2 Review Schedule
+
+  - Planning Commission Study Session: November 5, 2024
+  - Planning Commission Public Hearing: December 3, 2024
+  - City Council First Reading: January 14, 2025
+  - City Council Second Reading and Adoption (if approved): January 28, 2025
+  - Effective Date: 30 days after adoption
+
+5.3 Public Comment
+
+Written public comments may be submitted to:
+  Celia Okonkwo, Director of Planning
+  City of Maplewood Heights Department of Urban Planning and Zoning Services
+  400 Civic Center Plaza, Suite 210
+  Maplewood Heights, CA 99201 (fictional zip)
+
+  Email: planning@maplewoodheights.gov (fictional)
+  Comment deadline: November 29, 2024 at 5:00 PM
+
+
+ATTACHMENTS (not included in this summary document)
+  - Attachment A: Parcel Map — Greenway Corridor TOMOD Boundaries
+  - Attachment B: Draft Zoning Ordinance Amendment Language
+  - Attachment C: Transportation Demand Analysis (TDA-2024-18)
+  - Attachment D: Preliminary Environmental Review (ER-2024-0031)
+  - Attachment E: Community Workshop Summary Report
