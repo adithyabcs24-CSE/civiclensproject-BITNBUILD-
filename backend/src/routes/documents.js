@@ -141,4 +141,80 @@ router.get('/:id', (req, res) => {
   res.json({ document: doc, sections });
 });
 
+// ──────────────────────────────────────────────
+// POST /api/documents/:id/ask
+// Citizen Q&A on municipal documents backed by source evidence
+// ──────────────────────────────────────────────
+const { answerPolicyQuestion } = require('../pipeline/llmClient');
+
+router.post('/:id/ask', async (req, res) => {
+  try {
+    const { question, locality } = req.body;
+    if (!question || !String(question).trim()) {
+      return res.status(400).json({ error: 'Please provide a valid question.' });
+    }
+
+    const doc = db.prepare('SELECT * FROM documents WHERE id = ?').get(req.params.id);
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found.' });
+    }
+
+    const sections = db.prepare(`
+      SELECT id, heading, text, page, order_index
+      FROM document_sections
+      WHERE document_id = ?
+      ORDER BY order_index ASC
+    `).all(req.params.id);
+
+    // Optional: retrieve completed analysis if available
+    const analysis = db.prepare(`
+      SELECT * FROM analyses
+      WHERE document_id = ? AND status = 'complete'
+      ORDER BY created_at DESC LIMIT 1
+    `).get(req.params.id);
+
+    const answerPayload = await answerPolicyQuestion({
+      document: doc,
+      sections,
+      question: String(question).trim(),
+      locality: locality || (analysis ? analysis.locality : 'General / Ward 4'),
+      analysis
+    });
+
+    res.json(answerPayload);
+  } catch (err) {
+    console.error('Document Q&A error:', err);
+    res.status(500).json({ error: err.message || 'Failed to answer policy question.' });
+  }
+});
+
+// ──────────────────────────────────────────────
+// GET /api/documents/:id/evidence/:sectionId
+// Fetch source section citation text directly
+// ──────────────────────────────────────────────
+router.get('/:id/evidence/:sectionId', (req, res) => {
+  try {
+    const section = db.prepare(`
+      SELECT id, document_id, heading, text, page, order_index
+      FROM document_sections
+      WHERE id = ? AND document_id = ?
+    `).get(req.params.sectionId, req.params.id);
+
+    if (!section) {
+      return res.status(404).json({ error: `Section ${req.params.sectionId} not found for this document.` });
+    }
+
+    res.json({
+      id: section.id,
+      document_id: section.document_id,
+      heading: section.heading,
+      text: section.text,
+      page: section.page,
+      order_index: section.order_index,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = { router, ingestDocument };

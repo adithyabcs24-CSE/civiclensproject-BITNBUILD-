@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
 
-export default function EvidenceModal({ analysisId, sectionId, excerptLocation, claimTitle, onClose }) {
+export default function EvidenceModal({ analysisId, documentId, sectionId, excerptLocation, claimTitle, onClose }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!analysisId || !sectionId) return;
+    if (!sectionId || (!analysisId && !documentId)) return;
 
     setLoading(true);
     setError(null);
 
-    fetch(`/api/analyses/${analysisId}/evidence/${sectionId}`)
+    const url = analysisId 
+      ? `/api/analyses/${analysisId}/evidence/${sectionId}`
+      : `/api/documents/${documentId}/evidence/${sectionId}`;
+
+    fetch(url)
       .then(res => {
         if (!res.ok) {
           throw new Error(`Section citation not found (HTTP ${res.status})`);
@@ -26,7 +30,7 @@ export default function EvidenceModal({ analysisId, sectionId, excerptLocation, 
         setError(err.message);
         setLoading(false);
       });
-  }, [analysisId, sectionId]);
+  }, [analysisId, documentId, sectionId]);
 
   return (
     <div className="modal-overlay" onClick={onClose}>

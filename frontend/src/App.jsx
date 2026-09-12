@@ -17,6 +17,7 @@ export default function App() {
   const [evidenceModal, setEvidenceModal] = useState({
     isOpen: false,
     analysisId: null,
+    documentId: null,
     sectionId: null,
     excerptLocation: '',
     claimTitle: ''
@@ -49,10 +50,11 @@ export default function App() {
     setView('report');
   };
 
-  const handleOpenEvidence = (analysisId, sectionId, excerptLocation, claimTitle) => {
+  const handleOpenEvidence = (analysisId, sectionId, excerptLocation, claimTitle, documentId = null) => {
     setEvidenceModal({
       isOpen: true,
       analysisId,
+      documentId,
       sectionId,
       excerptLocation,
       claimTitle
@@ -88,6 +90,7 @@ export default function App() {
               setActiveAnalysisId(id);
               setView('pipeline');
             }}
+            onOpenEvidence={handleOpenEvidence}
           />
         )}
 
@@ -121,6 +124,7 @@ export default function App() {
       {evidenceModal.isOpen && (
         <EvidenceModal
           analysisId={evidenceModal.analysisId}
+          documentId={evidenceModal.documentId}
           sectionId={evidenceModal.sectionId}
           excerptLocation={evidenceModal.excerptLocation}
           claimTitle={evidenceModal.claimTitle}

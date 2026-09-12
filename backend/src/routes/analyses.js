@@ -209,4 +209,49 @@ router.get('/:id', (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────────
+// POST /api/analyses/:id/ask
+// Citizen Q&A on completed analysis
+// ──────────────────────────────────────────────
+const { answerPolicyQuestion } = require('../pipeline/llmClient');
+
+router.post('/:id/ask', async (req, res) => {
+  try {
+    const { question } = req.body;
+    if (!question || !String(question).trim()) {
+      return res.status(400).json({ error: 'Please provide a valid question.' });
+    }
+
+    const analysis = db.prepare('SELECT * FROM analyses WHERE id = ?').get(req.params.id);
+    if (!analysis) {
+      return res.status(404).json({ error: 'Analysis not found.' });
+    }
+
+    const doc = db.prepare('SELECT * FROM documents WHERE id = ?').get(analysis.document_id);
+    if (!doc) {
+      return res.status(404).json({ error: 'Associated document not found.' });
+    }
+
+    const sections = db.prepare(`
+      SELECT id, heading, text, page, order_index
+      FROM document_sections
+      WHERE document_id = ?
+      ORDER BY order_index ASC
+    `).all(analysis.document_id);
+
+    const answerPayload = await answerPolicyQuestion({
+      document: doc,
+      sections,
+      question: String(question).trim(),
+      locality: analysis.locality || 'General / Ward 4',
+      analysis
+    });
+
+    res.json(answerPayload);
+  } catch (err) {
+    console.error('Analysis Q&A error:', err);
+    res.status(500).json({ error: err.message || 'Failed to answer policy question.' });
+  }
+});
+
 module.exports = router;
