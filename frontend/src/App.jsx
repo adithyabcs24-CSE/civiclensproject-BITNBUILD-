@@ -5,6 +5,7 @@ import NewAnalysisModal from './components/NewAnalysisModal';
 import PipelineView from './components/PipelineView';
 import CitizenReport from './components/CitizenReport';
 import EvidenceModal from './components/EvidenceModal';
+import PolicyAlertsModal from './components/PolicyAlertsModal';
 
 export default function App() {
   const [view, setView] = useState('dashboard'); // 'dashboard' | 'pipeline' | 'report'
@@ -12,6 +13,10 @@ export default function App() {
   const [documents, setDocuments] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [preselectedDocId, setPreselectedDocId] = useState(null);
+
+  // Policy Alerts state
+  const [isAlertsModalOpen, setIsAlertsModalOpen] = useState(false);
+  const [unreadAlertsCount, setUnreadAlertsCount] = useState(0);
 
   // Evidence Modal State
   const [evidenceModal, setEvidenceModal] = useState({
@@ -30,8 +35,16 @@ export default function App() {
       .catch(err => console.error('Failed to load documents:', err));
   };
 
+  const fetchAlertsCount = () => {
+    fetch('/api/alerts')
+      .then(r => r.json())
+      .then(data => setUnreadAlertsCount(data.unread_count || 0))
+      .catch(err => console.error('Failed to load alerts count:', err));
+  };
+
   useEffect(() => {
     fetchDocuments();
+    fetchAlertsCount();
   }, []);
 
   const handleStartNewAnalysis = (docId = null) => {
@@ -73,9 +86,12 @@ export default function App() {
           setView(target);
           if (target === 'dashboard') {
             fetchDocuments();
+            fetchAlertsCount();
           }
         }}
         onNewAnalysis={() => handleStartNewAnalysis()}
+        unreadAlertsCount={unreadAlertsCount}
+        onOpenAlerts={() => setIsAlertsModalOpen(true)}
       />
 
       <main style={{ flex: 1 }}>
@@ -131,6 +147,13 @@ export default function App() {
           onClose={handleCloseEvidence}
         />
       )}
+
+      {/* Policy Alerts Center Modal */}
+      <PolicyAlertsModal
+        isOpen={isAlertsModalOpen}
+        onClose={() => setIsAlertsModalOpen(false)}
+        onAlertsUpdated={(cnt) => setUnreadAlertsCount(cnt)}
+      />
     </div>
   );
 }

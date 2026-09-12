@@ -81,8 +81,9 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [checkedActions, setCheckedActions] = useState({});
-  const [activeTab, setActiveTab] = useState('overview'); // overview | map | toolkit | calculators
+  const [activeTab, setActiveTab] = useState('overview'); // overview | qa | map | toolkit | calculators
   const [lang, setLang] = useState('en'); // en | kn
+  const [followedItems, setFollowedItems] = useState(new Set());
   
   // Audio Speech Synthesis state
   const [audioState, setAudioState] = useState('stopped'); // stopped | playing | paused
@@ -91,6 +92,33 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
   const [pitchLevel, setPitchLevel] = useState(1.22); // sweet female pitch boost
 
   const t = TRANSLATIONS[lang];
+
+  useEffect(() => {
+    fetch('/api/alerts/subscriptions')
+      .then(r => r.json())
+      .then(d => {
+        if (d.subscriptions) {
+          setFollowedItems(new Set(d.subscriptions.map(s => s.target_value)));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleQuickFollow = async (type, val) => {
+    if (!val) return;
+    try {
+      const res = await fetch('/api/alerts/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_type: type, target_value: val })
+      });
+      if (res.ok) {
+        setFollowedItems(prev => new Set([...prev, val]));
+      }
+    } catch (err) {
+      console.error('Follow error:', err);
+    }
+  };
 
   useEffect(() => {
     if (!analysisId) return;
@@ -466,6 +494,53 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
           <span className="badge" style={{ backgroundColor: '#f1f5f9', color: '#475569', borderColor: '#cbd5e1' }}>
             {t.officialReport}
           </span>
+
+          {/* 1-Click Follow Actions */}
+          <button
+            type="button"
+            onClick={() => handleQuickFollow('neighborhood', report.location)}
+            style={{
+              padding: '4px 12px',
+              borderRadius: 9999,
+              fontSize: 11,
+              fontWeight: 700,
+              backgroundColor: followedItems.has(report.location) ? '#dcfce7' : '#eff6ff',
+              color: followedItems.has(report.location) ? '#166534' : '#1e40af',
+              border: `1px solid ${followedItems.has(report.location) ? '#bbf7d0' : '#bfdbfe'}`,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              transition: 'all 0.15s ease'
+            }}
+            title={`Follow updates for ${report.location}`}
+          >
+            <span>🔔</span>
+            <span>{followedItems.has(report.location) ? '✓ Following Locality' : `+ Follow ${report.location}`}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleQuickFollow('project', report.project_title)}
+            style={{
+              padding: '4px 12px',
+              borderRadius: 9999,
+              fontSize: 11,
+              fontWeight: 700,
+              backgroundColor: followedItems.has(report.project_title) ? '#dcfce7' : '#eff6ff',
+              color: followedItems.has(report.project_title) ? '#166534' : '#1e40af',
+              border: `1px solid ${followedItems.has(report.project_title) ? '#bbf7d0' : '#bfdbfe'}`,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              transition: 'all 0.15s ease'
+            }}
+            title="Follow updates for this project"
+          >
+            <span>🔔</span>
+            <span>{followedItems.has(report.project_title) ? '✓ Following Project' : '+ Follow Project'}</span>
+          </button>
         </div>
 
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--primary)', lineHeight: 1.3, marginBottom: 14 }}>
@@ -851,9 +926,28 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
                         <h4 style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)', margin: 0 }}>
                           {pol.name}
                         </h4>
-                        <span className={`badge ${badgeClass}`}>
-                          {conf}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickFollow('policy', pol.name)}
+                            style={{
+                              fontSize: 11,
+                              padding: '2px 8px',
+                              borderRadius: 4,
+                              border: `1px solid ${followedItems.has(pol.name) ? '#bbf7d0' : '#bfdbfe'}`,
+                              backgroundColor: followedItems.has(pol.name) ? '#dcfce7' : '#eff6ff',
+                              color: followedItems.has(pol.name) ? '#166534' : '#1e40af',
+                              cursor: 'pointer',
+                              fontWeight: 700
+                            }}
+                            title={`Follow updates for ${pol.name}`}
+                          >
+                            🔔 {followedItems.has(pol.name) ? 'Following' : 'Follow'}
+                          </button>
+                          <span className={`badge ${badgeClass}`}>
+                            {conf}
+                          </span>
+                        </div>
                       </div>
                       <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.5, marginBottom: 12 }}>
                         {pol.description}
