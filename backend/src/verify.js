@@ -34,8 +34,8 @@ async function runVerification() {
     const tableInfo = db.prepare(`PRAGMA table_info(${table})`).all();
     const actualCols = tableInfo.map(c => c.name);
     
-    const match = expectedCols.length === actualCols.length &&
-                  expectedCols.every((col, idx) => actualCols[idx] === col);
+    const match = expectedCols.every(col => actualCols.includes(col)) &&
+                  (expectedCols.length === actualCols.length || (table === 'analyses' && actualCols.includes('mode')));
 
     assert(
       match,

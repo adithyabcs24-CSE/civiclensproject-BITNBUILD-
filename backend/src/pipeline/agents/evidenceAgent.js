@@ -1,3 +1,4 @@
+const db = require('../../db');
 const { callLLM } = require('../llmClient');
 
 const SYSTEM_INSTRUCTION = `You are the Evidence Agent of CivicLens AI, the critical anti-hallucination gate.
@@ -54,12 +55,27 @@ STRICT OUTPUT CONTRACT:
 }`;
 
 async function runEvidenceAgent({ document, sections, stage1Output, stage2Output, stage3Output }) {
-  const validSectionIds = new Set(stage1Output.sections.map(s => s.id));
+  // Query real rows in document_sections from SQLite for this document_id
+  let realSectionIdSet = new Set();
+  if (document && document.id) {
+    try {
+      const rows = db.prepare('SELECT id FROM document_sections WHERE document_id = ?').all(document.id);
+      realSectionIdSet = new Set(rows.map(r => r.id));
+    } catch (_dbErr) {
+      // Fallback to sections array if DB query fails in standalone memory tests
+    }
+  }
 
-  const policySecIds = new Set(stage2Output.policies.map(p => p.source_section_id));
+  // Authoritative set of real, non-hallucinated section IDs
+  const validSectionIds = realSectionIdSet.size > 0
+    ? realSectionIdSet
+    : new Set((sections || stage1Output?.sections || []).map(s => s.id));
+
+  const candidateSections = stage1Output?.sections || sections || [];
+  const policySecIds = new Set((stage2Output?.policies || []).map(p => p.source_section_id));
   const maxPromptSections = 30;
-  const promptSections = stage1Output.sections.length > maxPromptSections
-    ? stage1Output.sections
+  const promptSections = candidateSections.length > maxPromptSections
+    ? candidateSections
         .filter(s => policySecIds.has(s.id) || (s.text && s.text.length > 100))
         .slice(0, maxPromptSections)
         .map(s => ({
@@ -67,18 +83,18 @@ async function runEvidenceAgent({ document, sections, stage1Output, stage2Output
           heading: s.heading,
           text: s.text.substring(0, 800)
         }))
-    : stage1Output.sections.map(s => ({ id: s.id, heading: s.heading, text: s.text.substring(0, 1500) }));
+    : candidateSections.map(s => ({ id: s.id, heading: s.heading, text: (s.text || '').substring(0, 1500) }));
 
   const userPrompt = `Audit the following policies and impacts against the source text sections:
 
-SOURCE SECTIONS (${stage1Output.sections.length} total, showing ${promptSections.length} candidate sections):
+SOURCE SECTIONS (${candidateSections.length} total, showing ${promptSections.length} candidate sections):
 ${JSON.stringify(promptSections, null, 2)}
 
 POLICIES TO AUDIT:
-${JSON.stringify(stage2Output.policies, null, 2)}
+${JSON.stringify(stage2Output?.policies || [], null, 2)}
 
 IMPACTS TO AUDIT:
-${JSON.stringify(stage3Output.impacts, null, 2)}
+${JSON.stringify(stage3Output?.impacts || [], null, 2)}
 
 Verify grounding. Drop any ungrounded items. Mark inferences as inferred: true with confidence downgraded to "low". Return JSON adhering to the exact schema.`;
 
@@ -87,7 +103,7 @@ Verify grounding. Drop any ungrounded items. Mark inferences as inferred: true w
     userPrompt,
     stage: 'evidence',
     document,
-    sections,
+    sections: candidateSections,
     stage1Output,
     stage2Output,
     stage3Output,
@@ -97,13 +113,15 @@ Verify grounding. Drop any ungrounded items. Mark inferences as inferred: true w
     throw new Error('Evidence Agent did not return valid policies and impacts arrays.');
   }
 
+  // ──────────────────────────────────────────────────
   // Anti-hallucination post-processor and safety gate
+  // ──────────────────────────────────────────────────
   const verifiedPolicies = [];
   for (const pol of rawResult.policies) {
-    // Must have a real section ID
+    // Must match a verified real section ID in document_sections
     const secId = pol.evidence?.section_id || pol.source_section_id;
     if (!secId || !validSectionIds.has(secId)) {
-      // Drop ungrounded policy
+      // Drop ungrounded / hallucinated policy
       continue;
     }
 
@@ -129,12 +147,19 @@ Verify grounding. Drop any ungrounded items. Mark inferences as inferred: true w
   const verifiedImpacts = [];
 
   for (const imp of rawResult.impacts) {
-    // If evidence explicitly marked grounded as false or missing, drop it
+    // If evidence explicitly marked grounded as false, drop it
     if (imp.evidence && imp.evidence.grounded === false) {
       continue;
     }
 
-    // Must be based on retained policies
+    // Must have a real section ID matching actual document_sections in DB
+    const impSecId = imp.evidence?.section_id || imp.source_section_id;
+    if (!impSecId || !validSectionIds.has(impSecId)) {
+      // Drop impact with fake or missing section ID
+      continue;
+    }
+
+    // Must be based on retained, verified policies
     const validBasedPolicies = Array.isArray(imp.based_on_policy_ids)
       ? imp.based_on_policy_ids.filter(pid => verifiedPolicyIds.has(pid))
       : [];
@@ -143,10 +168,6 @@ Verify grounding. Drop any ungrounded items. Mark inferences as inferred: true w
       // Drop impact if its supporting policies were dropped
       continue;
     }
-
-    const secId = imp.evidence?.section_id && validSectionIds.has(imp.evidence.section_id)
-      ? imp.evidence.section_id
-      : (stage1Output.sections[0]?.id || '');
 
     const isInferred = Boolean(imp.inferred);
     const confidence = isInferred ? 'low' : (['high', 'medium', 'low'].includes(imp.confidence?.toLowerCase()) ? imp.confidence.toLowerCase() : 'medium');
@@ -159,7 +180,7 @@ Verify grounding. Drop any ungrounded items. Mark inferences as inferred: true w
       confidence: confidence,
       inferred: isInferred,
       evidence: {
-        section_id: secId,
+        section_id: impSecId,
         excerpt_location: String(imp.evidence?.excerpt_location || 'Source section context'),
         grounded: true,
       },
@@ -173,3 +194,4 @@ Verify grounding. Drop any ungrounded items. Mark inferences as inferred: true w
 }
 
 module.exports = { runEvidenceAgent };
+

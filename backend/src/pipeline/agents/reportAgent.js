@@ -105,6 +105,7 @@ Compose the citizen report strictly conforming to the JSON schema.`;
           'Submit written comments to the municipal clerk.',
           'Attend upcoming town council or planning board public sessions.'
         ],
+    mode: rawResult._mode || (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY ? 'gemini' : 'offline'),
   };
 }
 

@@ -500,6 +500,22 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
           <span className="badge" style={{ backgroundColor: '#f1f5f9', color: '#475569', borderColor: '#cbd5e1' }}>
             {t.officialReport}
           </span>
+          {report.mode && (
+            <span
+              className="badge"
+              style={{
+                backgroundColor: report.mode === 'gemini' ? '#f0fdf4' : '#f8fafc',
+                color: report.mode === 'gemini' ? '#166534' : '#475569',
+                borderColor: report.mode === 'gemini' ? '#86efac' : '#cbd5e1',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4
+              }}
+            >
+              {report.mode === 'gemini' ? '✨ Gemini Live AI' : '⚡ Offline Heuristic Fallback'}
+            </span>
+          )}
 
           {/* 1-Click Follow Actions */}
           <button

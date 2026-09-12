@@ -186,7 +186,9 @@ async function runFinalVerification() {
     let ungroundedFound = false;
 
     for (const a of allAnalyses) {
+      if (!a.report_json) continue;
       const rep = JSON.parse(a.report_json);
+      if (!rep) continue;
       if (Array.isArray(rep.impacts)) {
         for (const imp of rep.impacts) {
           if (!imp.evidence || !imp.evidence.section_id) {

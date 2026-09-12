@@ -12,8 +12,10 @@ if (!fs.existsSync(dataDir)) {
 
 const db = new Database(DB_PATH);
 
-// Enable WAL mode for better concurrency
+// Enable WAL mode and concurrency settings to prevent SQLITE_BUSY under concurrent requests
 db.pragma('journal_mode = WAL');
+db.pragma('busy_timeout = 5000');
+db.pragma('synchronous = NORMAL');
 db.pragma('foreign_keys = ON');
 
 // Create tables with exact schema from spec
@@ -42,6 +44,7 @@ db.exec(`
     document_id TEXT NOT NULL,
     locality TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending',
+    mode TEXT NOT NULL DEFAULT 'offline',
     document_json TEXT,
     policy_json TEXT,
     impact_json TEXT,
@@ -75,6 +78,16 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 `);
+
+// Safe migration: Ensure 'mode' column exists on existing analyses table
+try {
+  const analysisColumns = db.pragma('table_info(analyses)');
+  if (analysisColumns && !analysisColumns.some(c => c.name === 'mode')) {
+    db.exec("ALTER TABLE analyses ADD COLUMN mode TEXT NOT NULL DEFAULT 'offline'");
+  }
+} catch (migErr) {
+  console.warn('Migration warning for analyses.mode column:', migErr.message);
+}
 
 // Seed starter follows and alerts if subscriptions is empty
 const subCount = db.prepare('SELECT COUNT(*) as cnt FROM subscriptions').get().cnt;

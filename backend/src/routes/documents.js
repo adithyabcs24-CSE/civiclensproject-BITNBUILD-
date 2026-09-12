@@ -6,16 +6,21 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { extractSections } = require('../sectioner');
 
-// Multer: store uploaded files in memory (max 20 MB)
+// Multer: store uploaded files in memory with strict 10MB limit and MIME validation
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (_req, file, cb) => {
-    const allowed = ['application/pdf', 'text/plain'];
-    if (allowed.includes(file.mimetype) || file.originalname.endsWith('.txt')) {
+    const name = (file.originalname || '').toLowerCase();
+    const isPdf = file.mimetype === 'application/pdf' || name.endsWith('.pdf');
+    const isTxt = file.mimetype === 'text/plain' || name.endsWith('.txt');
+
+    if (isPdf || isTxt) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF or plain text files are accepted.'));
+      const err = new Error('Only PDF or plain text files are accepted.');
+      err.code = 'INVALID_FILE_TYPE';
+      cb(err);
     }
   },
 });
@@ -26,16 +31,25 @@ const upload = multer({
  */
 async function ingestDocument({ buffer, mimetype, originalname, title, doc_type }) {
   let rawText = '';
+  const name = (originalname || '').toLowerCase();
 
-  if (mimetype === 'application/pdf' || originalname.toLowerCase().endsWith('.pdf')) {
-    const data = await pdfParse(buffer);
-    rawText = data.text;
-  } else {
-    rawText = buffer.toString('utf-8');
+  try {
+    if (mimetype === 'application/pdf' || name.endsWith('.pdf')) {
+      const data = await pdfParse(buffer);
+      rawText = data.text;
+    } else {
+      rawText = buffer.toString('utf-8');
+    }
+  } catch (parseErr) {
+    const err = new Error(`Failed to parse file: ${parseErr.message}`);
+    err.status = 400;
+    throw err;
   }
 
   if (!rawText || rawText.trim().length === 0) {
-    throw new Error('Could not extract any text from the uploaded file.');
+    const err = new Error('Could not extract any text from the uploaded file.');
+    err.status = 400;
+    throw err;
   }
 
   const docId = uuidv4();
@@ -74,7 +88,20 @@ async function ingestDocument({ buffer, mimetype, originalname, title, doc_type 
 // ──────────────────────────────────────────────
 // POST /api/documents  — upload & ingest
 // ──────────────────────────────────────────────
-router.post('/', upload.single('file'), async (req, res) => {
+router.post('/', (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'File size exceeds limit of 10MB.' });
+      }
+      if (err.code === 'INVALID_FILE_TYPE' || err.message.includes('accepted')) {
+        return res.status(400).json({ error: err.message });
+      }
+      return res.status(400).json({ error: err.message || 'File upload error.' });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded. Send a PDF or .txt as form-data field "file".' });
@@ -102,7 +129,8 @@ router.post('/', upload.single('file'), async (req, res) => {
     });
   } catch (err) {
     console.error('Ingest error:', err);
-    res.status(500).json({ error: err.message });
+    const statusCode = err.status || (err.message.includes('extract any text') || err.message.includes('parse') ? 400 : 500);
+    res.status(statusCode).json({ error: err.message });
   }
 });
 

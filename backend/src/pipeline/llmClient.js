@@ -1,8 +1,17 @@
 require('dotenv').config();
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+/**
+ * Dynamically resolve the Gemini client using either GEMINI_API_KEY or GOOGLE_API_KEY.
+ */
+function getGenAI() {
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!key || typeof key !== 'string' || key.trim() === '') {
+    return null;
+  }
+  return new GoogleGenerativeAI(key.trim());
+}
+
 const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
 /**
@@ -23,13 +32,17 @@ function extractJson(raw) {
 
 /**
  * Call the LLM with a system prompt and user prompt, enforcing JSON output.
- * If no GEMINI_API_KEY is configured, falls back to a grounded heuristic simulation
- * so tests and development work seamlessly offline.
+ * If no GEMINI_API_KEY or GOOGLE_API_KEY is configured, or if any Gemini failure occurs
+ * (bad key, rate limit, timeout, malformed response), seamlessly falls back to the
+ * offline heuristic simulation engine without throwing an unhandled rejection.
+ * Attaches `_mode: 'gemini' | 'offline'`.
  */
 async function callLLM({ systemInstruction, userPrompt, stage, document, sections, locality, stage1Output, stage2Output, stage3Output, evidenceOutput }) {
-  if (genAI) {
+  const client = getGenAI();
+
+  if (client) {
     try {
-      const model = genAI.getGenerativeModel({
+      const model = client.getGenerativeModel({
         model: MODEL_NAME,
         systemInstruction,
         generationConfig: {
@@ -38,17 +51,39 @@ async function callLLM({ systemInstruction, userPrompt, stage, document, section
         },
       });
 
-      const result = await model.generateContent(userPrompt);
-      const text = result.response.text();
-      return extractJson(text);
+      // Guard with a 25-second timeout to prevent hanging connections
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Gemini API call timed out after 25 seconds')), 25000)
+      );
+
+      const result = await Promise.race([
+        model.generateContent(userPrompt),
+        timeoutPromise,
+      ]);
+
+      const text = result?.response?.text();
+      const parsed = extractJson(text);
+      if (parsed && typeof parsed === 'object') {
+        parsed._mode = 'gemini';
+        return parsed;
+      }
+      throw new Error('Parsed response was not a valid object.');
     } catch (err) {
-      console.warn(`[Gemini API Warning] Stage ${stage} API call failed: ${err.message}. Falling back to dynamic agent engine.`);
-      return simulateAgent({ stage, document, sections, locality, stage1Output, stage2Output, stage3Output, evidenceOutput });
+      console.warn(`[Gemini API Warning] Stage "${stage}" API call failed (${err.message}). Falling back to offline heuristic simulation engine.`);
+      const sim = simulateAgent({ stage, document, sections, locality, stage1Output, stage2Output, stage3Output, evidenceOutput });
+      if (sim && typeof sim === 'object') {
+        sim._mode = 'offline';
+      }
+      return sim;
     }
   }
 
   // High-fidelity fallback simulation engine (implements the exact same rules and grounding)
-  return simulateAgent({ stage, document, sections, locality, stage1Output, stage2Output, stage3Output, evidenceOutput });
+  const sim = simulateAgent({ stage, document, sections, locality, stage1Output, stage2Output, stage3Output, evidenceOutput });
+  if (sim && typeof sim === 'object') {
+    sim._mode = 'offline';
+  }
+  return sim;
 }
 
 /**
@@ -188,12 +223,12 @@ function simulateMaplewood({ stage, document, sections, locality, stage1Output, 
   if (stage === 'evidence') {
     const validSectionIds = new Set(stage1Output.sections.map(s => s.id));
     return {
-      policies: stage2Output.policies.filter(p => validSectionIds.has(p.source_section_id)).map(p => ({
+      policies: stage2Output.policies.filter(p => validSectionIds.has(p.evidence?.section_id || p.source_section_id)).map(p => ({
         ...p,
         inferred: false,
         evidence: {
-          section_id: p.source_section_id,
-          excerpt_location: 'Section 2 & 3, development standards and infrastructure schedule',
+          section_id: p.evidence?.section_id || p.source_section_id,
+          excerpt_location: p.evidence?.excerpt_location || 'Section 2 & 3, development standards and infrastructure schedule',
           grounded: true
         }
       })),
@@ -201,9 +236,9 @@ function simulateMaplewood({ stage, document, sections, locality, stage1Output, 
         ...i,
         inferred: false,
         evidence: {
-          section_id: stage1Output.sections[0]?.id || '',
-          excerpt_location: 'Section 3.1 & 3.2, Transportation Demand Analysis',
-          grounded: true
+          section_id: i.evidence?.section_id || i.source_section_id || stage1Output.sections[0]?.id || '',
+          excerpt_location: i.evidence?.excerpt_location || 'Section 3.1 & 3.2, Transportation Demand Analysis',
+          grounded: i.evidence?.grounded !== false
         }
       }))
     };
@@ -840,7 +875,8 @@ async function answerPolicyQuestion({ document, sections, question, locality, an
   const loc = (locality && String(locality).trim()) || 'General / Ward';
 
   // 1. Try Gemini if configured
-  if (genAI) {
+  const client = getGenAI();
+  if (client) {
     try {
       const prompt = `
 You are the CivicLens AI Policy Q&A Agent. A citizen is asking a question about the municipal document: "${document.title}".
@@ -878,7 +914,7 @@ Return STRICT JSON format:
 }
 `;
 
-      const model = genAI.getGenerativeModel({
+      const model = client.getGenerativeModel({
         model: MODEL_NAME,
         systemInstruction: 'You are an expert municipal policy analyst. Answer citizen questions honestly with exact source citations.',
         generationConfig: {

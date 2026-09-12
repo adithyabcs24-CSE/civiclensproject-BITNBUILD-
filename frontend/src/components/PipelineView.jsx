@@ -118,10 +118,29 @@ export default function PipelineView({ analysisId, onComplete, onBack }) {
           ← Dashboard
         </button>
 
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--teal)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
             ⚡ Autonomous Agent Pipeline
           </span>
+          {analysis?.mode && (
+            <span
+              className="badge"
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: 9999,
+                backgroundColor: analysis.mode === 'gemini' ? '#f0fdf4' : '#f8fafc',
+                color: analysis.mode === 'gemini' ? '#166534' : '#475569',
+                border: `1px solid ${analysis.mode === 'gemini' ? '#86efac' : '#cbd5e1'}`,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4
+              }}
+            >
+              {analysis.mode === 'gemini' ? '✨ Gemini Live AI' : '⚡ Offline Heuristic Fallback'}
+            </span>
+          )}
         </div>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--primary)', marginBottom: 8 }}>
           Processing Civic Intelligence

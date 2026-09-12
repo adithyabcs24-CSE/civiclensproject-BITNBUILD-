@@ -23,8 +23,38 @@ async function executeStageWithRetry(stageName, stageFn) {
 }
 
 /**
- * Run Stages 1→4 in strict sequence for a given analysis_id.
- * Updates the analyses row in SQLite after each stage completes.
+ * Atomic stage updater with status guard:
+ * Runs inside an SQLite transaction so that the DB row's `status` field
+ * ONLY advances after its corresponding *_json column is fully written.
+ * If the analysis was marked 'failed', throws to prevent stale/partial stage updates.
+ */
+const updateStageTransition = db.transaction((id, jsonColumn, jsonStr, nextStatus, mode = null) => {
+  const current = db.prepare('SELECT status FROM analyses WHERE id = ?').get(id);
+  if (!current) {
+    throw new Error(`Analysis ${id} does not exist.`);
+  }
+  if (current.status === 'failed') {
+    throw new Error(`Aborting transition: Analysis ${id} is already in failed status.`);
+  }
+
+  if (mode) {
+    db.prepare(`
+      UPDATE analyses
+      SET ${jsonColumn} = ?, status = ?, mode = ?
+      WHERE id = ?
+    `).run(jsonStr, nextStatus, mode, id);
+  } else {
+    db.prepare(`
+      UPDATE analyses
+      SET ${jsonColumn} = ?, status = ?
+      WHERE id = ?
+    `).run(jsonStr, nextStatus, id);
+  }
+});
+
+/**
+ * Run Stages 1→5 in strict sequence for a given analysis_id.
+ * Updates the analyses row in SQLite atomically after each stage completes.
  */
 async function runPipeline(analysisId) {
   const analysis = db.prepare('SELECT * FROM analyses WHERE id = ?').get(analysisId);
@@ -65,12 +95,7 @@ async function runPipeline(analysisId) {
     stage1Output = await executeStageWithRetry('document', () =>
       runDocumentAgent({ document, sections })
     );
-
-    db.prepare(`
-      UPDATE analyses
-      SET document_json = ?, status = 'document'
-      WHERE id = ?
-    `).run(JSON.stringify(stage1Output), analysisId);
+    updateStageTransition(analysisId, 'document_json', JSON.stringify(stage1Output), 'document');
 
     // ──────────────────────────────────────────────────
     // STAGE 2: Policy Agent
@@ -78,12 +103,7 @@ async function runPipeline(analysisId) {
     stage2Output = await executeStageWithRetry('policy', () =>
       runPolicyAgent({ document, sections, stage1Output })
     );
-
-    db.prepare(`
-      UPDATE analyses
-      SET policy_json = ?, status = 'policy'
-      WHERE id = ?
-    `).run(JSON.stringify(stage2Output), analysisId);
+    updateStageTransition(analysisId, 'policy_json', JSON.stringify(stage2Output), 'policy');
 
     // ──────────────────────────────────────────────────
     // STAGE 3: Impact Agent
@@ -91,12 +111,7 @@ async function runPipeline(analysisId) {
     stage3Output = await executeStageWithRetry('impact', () =>
       runImpactAgent({ document, sections, locality, stage1Output, stage2Output })
     );
-
-    db.prepare(`
-      UPDATE analyses
-      SET impact_json = ?, status = 'impact'
-      WHERE id = ?
-    `).run(JSON.stringify(stage3Output), analysisId);
+    updateStageTransition(analysisId, 'impact_json', JSON.stringify(stage3Output), 'impact');
 
     // ──────────────────────────────────────────────────
     // STAGE 4: Evidence Agent (Anti-hallucination gate)
@@ -104,12 +119,7 @@ async function runPipeline(analysisId) {
     stage4Output = await executeStageWithRetry('evidence', () =>
       runEvidenceAgent({ document, sections, stage1Output, stage2Output, stage3Output })
     );
-
-    db.prepare(`
-      UPDATE analyses
-      SET evidence_json = ?, status = 'evidence'
-      WHERE id = ?
-    `).run(JSON.stringify(stage4Output), analysisId);
+    updateStageTransition(analysisId, 'evidence_json', JSON.stringify(stage4Output), 'evidence');
 
     // ──────────────────────────────────────────────────
     // STAGE 5: Citizen Report Agent
@@ -124,22 +134,15 @@ async function runPipeline(analysisId) {
       })
     );
 
-    db.prepare(`
-      UPDATE analyses
-      SET report_json = ?, status = 'report'
-      WHERE id = ?
-    `).run(JSON.stringify(stage5Output), analysisId);
+    const executionMode = stage5Output.mode || (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY ? 'gemini' : 'offline');
 
-    // Final status transition to complete
-    db.prepare(`
-      UPDATE analyses
-      SET status = 'complete'
-      WHERE id = ?
-    `).run(analysisId);
+    // Atomic completion: persist report_json, set execution mode, and advance status to 'complete' in one transaction
+    updateStageTransition(analysisId, 'report_json', JSON.stringify(stage5Output), 'complete', executionMode);
 
     return {
       analysis_id: analysisId,
       status: 'complete',
+      mode: executionMode,
       document_json: stage1Output,
       policy_json: stage2Output,
       impact_json: stage3Output,
