@@ -4,6 +4,7 @@ import ActionToolkit from './ActionToolkit';
 import CivicCalculators from './CivicCalculators';
 import EvidenceLineageGraph from './EvidenceLineageGraph';
 import PolicyQA from './PolicyQA';
+import CivicTimeline from './CivicTimeline';
 
 const CATEGORY_COLORS = {
   housing: { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', icon: '🏠' },
@@ -34,6 +35,7 @@ const TRANSLATIONS = {
     disclaimerText: 'CivicLens AI provides informational summaries only and is not a substitute for reviewing official government documents or consulting your local government office.',
     tabs: {
       overview: '📊 Overview & Impacts',
+      timeline: '📅 Civic Timeline',
       qa: '🧠 Ask Questions About Policies',
       map: '🗺️ Civic Map & Hotspots',
       lineage: '🌳 Evidence Lineage Graph',
@@ -63,6 +65,7 @@ const TRANSLATIONS = {
     disclaimerText: 'ಸಿವಿಕ್ಲೆನ್ಸ್ AI ಮಾಹಿತಿ ಉದ್ದೇಶಗಳಿಗಾಗಿ ಮಾತ್ರ ಸಾರಾಂಶಗಳನ್ನು ಒದಗಿಸುತ್ತದೆ ಮತ್ತು ಅಧಿಕೃತ ಸರ್ಕಾರಿ ದಾಖಲೆಗಳು ಅಥವಾ ಕಚೇರಿಗಳನ್ನು ಸಂಪರ್ಕಿಸುವುದಕ್ಕೆ ಬದಲಿಯಾಗಿರುವುದಿಲ್ಲ.',
     tabs: {
       overview: '📊 ವರದಿ ಮತ್ತು ಪರಿಣಾಮಗಳು',
+      timeline: '📅 ಕಾಲಾನುಕ್ರಮ ವೇಳಾಪಟ್ಟಿ',
       qa: '🧠 ನೀತಿಗಳ ಬಗ್ಗೆ ಪ್ರಶ್ನೆಗಳು',
       map: '🗺️ ನಕ್ಷೆ ಮತ್ತು ವಲಯಗಳು',
       lineage: '🌳 ಪುರಾವೆ ವಂಶಾವಳಿ ನಕ್ಷೆ',
@@ -583,6 +586,17 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
         </button>
         <button
           type="button"
+          onClick={() => setActiveTab('timeline')}
+          className={`civic-tab-btn ${activeTab === 'timeline' ? 'active' : ''}`}
+          style={{
+            borderColor: activeTab === 'timeline' ? 'var(--primary)' : undefined,
+            fontWeight: 700
+          }}
+        >
+          {t.tabs.timeline}
+        </button>
+        <button
+          type="button"
           onClick={() => setActiveTab('qa')}
           className={`civic-tab-btn ${activeTab === 'qa' ? 'active' : ''}`}
           style={{
@@ -621,6 +635,17 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
           {t.tabs.calculators}
         </button>
       </div>
+
+      {/* VIEW: CIVIC TIMELINE (DEDICATED TAB) */}
+      {activeTab === 'timeline' && (
+        <div className="animate-fade">
+          <CivicTimeline
+            analysisId={analysisId}
+            documentTitle={report.project_title}
+            onOpenEvidence={onOpenEvidence}
+          />
+        </div>
+      )}
 
       {/* VIEW: ASK QUESTIONS ABOUT POLICIES (DEDICATED TAB) */}
       {activeTab === 'qa' && (
@@ -751,11 +776,34 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
           {/* Important Dates Timeline */}
           {Array.isArray(report.important_dates) && report.important_dates.length > 0 && (
             <div className="card" style={{ padding: 24, marginBottom: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <span style={{ fontSize: 18 }}>🗓️</span>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--primary)', margin: 0 }}>
-                  {t.importantDates}
-                </h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>🗓️</span>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--primary)', margin: 0 }}>
+                    {t.importantDates}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('timeline')}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: 'var(--primary)',
+                    backgroundColor: '#eff6ff',
+                    border: '1px solid #bfdbfe',
+                    padding: '5px 12px',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <span>📅 Open Civic Timeline & Plain Text (↓)</span>
+                  <span>→</span>
+                </button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>

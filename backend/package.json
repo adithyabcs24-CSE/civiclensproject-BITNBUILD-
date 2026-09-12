@@ -13,7 +13,8 @@
     "test:final": "node src/verify_final.js",
     "test:qa": "node src/verify_qa.js",
     "test:alerts": "node src/verify_alerts.js",
-    "test": "node src/verify.js && node src/verify_part2.js && node src/verify_part3.js && node src/verify_final.js && node src/verify_qa.js && node src/verify_alerts.js"
+    "test:timeline": "node src/verify_timeline.js",
+    "test": "node src/verify.js && node src/verify_part2.js && node src/verify_part3.js && node src/verify_final.js && node src/verify_qa.js && node src/verify_alerts.js && node src/verify_timeline.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

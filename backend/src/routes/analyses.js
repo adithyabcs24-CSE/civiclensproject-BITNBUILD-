@@ -3,6 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { runPipeline } = require('../pipeline/orchestrator');
+const { buildMilestonesForAnalysis, formatPlainTextTimeline } = require('./timeline');
 
 /**
  * Safely parse a JSON column string, or return null.
@@ -255,6 +256,40 @@ router.post('/:id/ask', async (req, res) => {
   } catch (err) {
     console.error('Analysis Q&A error:', err);
     res.status(500).json({ error: err.message || 'Failed to answer policy question.' });
+  }
+});
+
+// ──────────────────────────────────────────────
+// GET /api/analyses/:id/timeline
+// Returns chronological milestones and plain text format
+// ──────────────────────────────────────────────
+router.get('/:id/timeline', (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const analysis = db.prepare('SELECT * FROM analyses WHERE id = ?').get(id);
+    if (!analysis) {
+      return res.status(404).json({ error: 'Analysis not found.' });
+    }
+
+    const doc = db.prepare('SELECT * FROM documents WHERE id = ?').get(analysis.document_id);
+    const sections = db.prepare('SELECT * FROM document_sections WHERE document_id = ? ORDER BY order_index ASC').all(analysis.document_id);
+
+    const milestones = buildMilestonesForAnalysis(analysis, doc, sections);
+    const plainText = formatPlainTextTimeline(milestones);
+
+    res.json({
+      analysis_id: id,
+      document_id: analysis.document_id,
+      project_title: doc?.title || 'Civic Document',
+      location: analysis.locality,
+      milestones_count: milestones.length,
+      plain_text: plainText,
+      milestones
+    });
+  } catch (err) {
+    console.error('GET /api/analyses/:id/timeline error:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
