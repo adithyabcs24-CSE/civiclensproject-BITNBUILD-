@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import PolicyQA from './PolicyQA';
 
 export default function Dashboard({ onStartAnalysis, onOpenReport, onOpenPipeline, onOpenEvidence }) {
   const [documents, setDocuments] = useState([]);
@@ -131,13 +130,6 @@ export default function Dashboard({ onStartAnalysis, onOpenReport, onOpenPipelin
           <span>New Citizen Analysis</span>
         </button>
       </div>
-
-      {/* Flagship Feature: Ask Questions About Policies */}
-      <PolicyQA 
-        documents={documents} 
-        onOpenEvidence={onOpenEvidence}
-        onStartAnalysis={onStartAnalysis}
-      />
 
       {/* Main Grid: Active Issues + Upcoming Dates Sidebar */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 32, marginBottom: 40 }}>

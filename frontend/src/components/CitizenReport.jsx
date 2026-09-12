@@ -3,6 +3,7 @@ import CivicMap from './CivicMap';
 import ActionToolkit from './ActionToolkit';
 import CivicCalculators from './CivicCalculators';
 import EvidenceLineageGraph from './EvidenceLineageGraph';
+import PolicyQA from './PolicyQA';
 
 const CATEGORY_COLORS = {
   housing: { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', icon: '🏠' },
@@ -33,6 +34,7 @@ const TRANSLATIONS = {
     disclaimerText: 'CivicLens AI provides informational summaries only and is not a substitute for reviewing official government documents or consulting your local government office.',
     tabs: {
       overview: '📊 Overview & Impacts',
+      qa: '🧠 Ask Questions About Policies',
       map: '🗺️ Civic Map & Hotspots',
       lineage: '🌳 Evidence Lineage Graph',
       toolkit: '⚡ Action Toolkit (RTI & Letters)',
@@ -61,6 +63,7 @@ const TRANSLATIONS = {
     disclaimerText: 'ಸಿವಿಕ್ಲೆನ್ಸ್ AI ಮಾಹಿತಿ ಉದ್ದೇಶಗಳಿಗಾಗಿ ಮಾತ್ರ ಸಾರಾಂಶಗಳನ್ನು ಒದಗಿಸುತ್ತದೆ ಮತ್ತು ಅಧಿಕೃತ ಸರ್ಕಾರಿ ದಾಖಲೆಗಳು ಅಥವಾ ಕಚೇರಿಗಳನ್ನು ಸಂಪರ್ಕಿಸುವುದಕ್ಕೆ ಬದಲಿಯಾಗಿರುವುದಿಲ್ಲ.',
     tabs: {
       overview: '📊 ವರದಿ ಮತ್ತು ಪರಿಣಾಮಗಳು',
+      qa: '🧠 ನೀತಿಗಳ ಬಗ್ಗೆ ಪ್ರಶ್ನೆಗಳು',
       map: '🗺️ ನಕ್ಷೆ ಮತ್ತು ವಲಯಗಳು',
       lineage: '🌳 ಪುರಾವೆ ವಂಶಾವಳಿ ನಕ್ಷೆ',
       toolkit: '⚡ ನಾಗರಿಕ ಅರ್ಜಿ ಮತ್ತು ಆರ್‌ಟಿಐ',
@@ -505,6 +508,17 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
         </button>
         <button
           type="button"
+          onClick={() => setActiveTab('qa')}
+          className={`civic-tab-btn ${activeTab === 'qa' ? 'active' : ''}`}
+          style={{
+            borderColor: activeTab === 'qa' ? 'var(--primary)' : undefined,
+            fontWeight: 700
+          }}
+        >
+          {t.tabs.qa}
+        </button>
+        <button
+          type="button"
           onClick={() => setActiveTab('map')}
           className={`civic-tab-btn ${activeTab === 'map' ? 'active' : ''}`}
         >
@@ -532,6 +546,19 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
           {t.tabs.calculators}
         </button>
       </div>
+
+      {/* VIEW: ASK QUESTIONS ABOUT POLICIES (DEDICATED TAB) */}
+      {activeTab === 'qa' && (
+        <div className="animate-fade">
+          <PolicyQA
+            documentId={report.document_id}
+            analysisId={analysisId}
+            documentTitle={report.project_title}
+            onOpenEvidence={onOpenEvidence}
+            embedded={false}
+          />
+        </div>
+      )}
 
       {/* VIEW: CIVIC MAP */}
       {activeTab === 'map' && (
@@ -609,6 +636,15 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
               </div>
             </div>
           )}
+
+          {/* Interactive Policy Q&A Embedded inside Document Report */}
+          <PolicyQA
+            documentId={report.document_id}
+            analysisId={analysisId}
+            documentTitle={report.project_title}
+            onOpenEvidence={onOpenEvidence}
+            embedded={true}
+          />
 
           {/* Two Column Context Grid: Why It Matters & Who May Be Affected */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20, marginBottom: 24 }}>

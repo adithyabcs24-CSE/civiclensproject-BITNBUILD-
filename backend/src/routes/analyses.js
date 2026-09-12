@@ -116,7 +116,7 @@ router.get('/', (_req, res) => {
 // ──────────────────────────────────────────────
 router.get('/:id/report', (req, res) => {
   try {
-    const row = db.prepare('SELECT id, status, report_json, locality FROM analyses WHERE id = ?').get(req.params.id);
+    const row = db.prepare('SELECT id, document_id, status, report_json, locality FROM analyses WHERE id = ?').get(req.params.id);
     if (!row) {
       return res.status(404).json({ error: 'Analysis not found.' });
     }
@@ -139,8 +139,12 @@ router.get('/:id/report', (req, res) => {
     const reportData = parseJsonColumn(row.report_json);
     return res.status(200).json({
       status: 'complete',
+      document_id: row.document_id,
       ...reportData,
-      report: reportData,
+      report: {
+        ...reportData,
+        document_id: row.document_id,
+      },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

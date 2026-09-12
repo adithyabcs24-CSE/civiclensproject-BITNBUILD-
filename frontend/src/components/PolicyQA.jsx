@@ -8,8 +8,17 @@ const SUGGESTED_QUESTIONS = [
   { id: 'objections', label: 'When can citizens submit objections?', icon: '📅', category: 'Objections & Deadlines' }
 ];
 
-export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalysis }) {
-  const [selectedDocId, setSelectedDocId] = useState('');
+export default function PolicyQA({ 
+  documents = [], 
+  documentId = null,
+  analysisId = null,
+  documentTitle = '',
+  onOpenEvidence, 
+  onStartAnalysis,
+  embedded = false,
+  autoQuestion = null
+}) {
+  const [selectedDocId, setSelectedDocId] = useState(documentId || '');
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentAnswer, setCurrentAnswer] = useState(null);
@@ -18,22 +27,35 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
   const [lang, setLang] = useState('en'); // 'en' | 'kn'
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  // Auto-select initial document
+  // Sync documentId if prop updates
   useEffect(() => {
-    if (documents && documents.length > 0 && !selectedDocId) {
-      // Prioritize Karnataka Municipal Act or Maplewood
+    if (documentId) {
+      setSelectedDocId(documentId);
+    }
+  }, [documentId]);
+
+  // Auto-select initial document if in multi-doc mode
+  useEffect(() => {
+    if (!documentId && documents && documents.length > 0 && !selectedDocId) {
       const preferred = documents.find(d => 
         (d.title && d.title.includes('Karnataka')) ||
         (d.title && d.title.includes('Maplewood'))
       );
       setSelectedDocId(preferred ? preferred.id : documents[0].id);
     }
-  }, [documents, selectedDocId]);
+  }, [documents, documentId, selectedDocId]);
+
+  // If autoQuestion is passed, ask it automatically
+  useEffect(() => {
+    if (autoQuestion && !currentAnswer) {
+      handleAsk(autoQuestion);
+    }
+  }, [autoQuestion, selectedDocId, analysisId]);
 
   // Clean up speech synthesis on unmount
   useEffect(() => {
     return () => {
-      if (window.speechSynthesis) {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
     };
@@ -42,8 +64,10 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
   const handleAsk = async (qText) => {
     const targetQ = qText || question;
     if (!targetQ || !targetQ.trim()) return;
-    if (!selectedDocId) {
-      setError('Please select a municipal document first.');
+
+    const activeDocId = documentId || selectedDocId;
+    if (!activeDocId && !analysisId) {
+      setError('Please select or upload a municipal document first.');
       return;
     }
 
@@ -51,13 +75,17 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
     setError(null);
 
     // Stop ongoing speech
-    if (window.speechSynthesis) {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
     }
 
     try {
-      const res = await fetch(`/api/documents/${selectedDocId}/ask`, {
+      const url = analysisId
+        ? `/api/analyses/${analysisId}/ask`
+        : `/api/documents/${activeDocId}/ask`;
+
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: targetQ.trim() })
@@ -87,7 +115,7 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
 
   // Sweet voice readout
   const handleSpeak = (text) => {
-    if (!window.speechSynthesis) return;
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
     if (isSpeaking) {
       window.speechSynthesis.cancel();
@@ -114,12 +142,14 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
     window.speechSynthesis.speak(utterance);
   };
 
-  const selectedDoc = documents.find(d => d.id === selectedDocId);
+  const activeDocId = documentId || selectedDocId;
+  const currentDocObj = documents.find(d => d.id === activeDocId);
+  const displayTitle = documentTitle || (currentDocObj ? currentDocObj.title : 'Uploaded Municipal Document');
 
   return (
     <div className="card animate-fade" style={{
-      padding: '28px 32px',
-      marginBottom: 36,
+      padding: embedded ? '20px 24px' : '28px 32px',
+      marginBottom: 32,
       border: '2px solid #bfdbfe',
       background: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 100%)',
       boxShadow: '0 8px 24px -4px rgba(30, 58, 138, 0.08)'
@@ -134,18 +164,18 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
               Evidence Grounded
             </span>
           </div>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary)', margin: 0, letterSpacing: -0.5 }}>
+          <h2 style={{ fontSize: embedded ? 20 : 24, fontWeight: 800, color: 'var(--primary)', margin: 0, letterSpacing: -0.5 }}>
             {lang === 'kn' ? 'ನೀತಿಗಳ ಬಗ್ಗೆ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಿ' : 'Ask Questions About Policies'}
           </h2>
-          <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: '4px 0 0', maxWidth: 640 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0', maxWidth: 640 }}>
             {lang === 'kn' 
-              ? 'ಯಾವುದೇ ಪುರಸಭೆಯ ಪ್ರಸ್ತಾವನೆ ಅಥವಾ ಕಾಯಿದೆಯ ಬಗ್ಗೆ ನೇರ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಿ. ಮೂಲ ದಾಖಲೆಯಿಂದ ಪರಿಶೀಲಿಸಿದ ಪುರಾವೆಗಳನ್ನು ಪಡೆಯಿರಿ.'
-              : 'Ask any question about municipal proposals, bylaws, budgets, or notices. Every answer includes verified evidence from the source document.'}
+              ? 'ಈ ಪ್ರಸ್ತಾವನೆಯ ಬಗ್ಗೆ ನೇರ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಿ. ಮೂಲ ದಾಖಲೆಯಿಂದ ಪರಿಶೀಲಿಸಿದ ಪುರಾವೆಗಳೊಂದಿಗೆ ತಕ್ಷಣ ಉತ್ತರ ಪಡೆಯಿರಿ.'
+              : 'Ask any question about this municipal policy or proposal. Every answer includes verified evidence from the source document.'}
           </p>
         </div>
 
         {/* Document Selector & Language Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {/* Language Toggle */}
           <div style={{
             display: 'flex',
@@ -187,41 +217,61 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
             </button>
           </div>
 
-          {/* Document Picker */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>📄 Policy:</span>
-            <select
-              value={selectedDocId}
-              onChange={e => {
-                setSelectedDocId(e.target.value);
-                setCurrentAnswer(null);
-              }}
-              style={{
-                padding: '8px 12px',
-                fontSize: 13,
-                fontWeight: 600,
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)',
-                backgroundColor: '#ffffff',
-                color: 'var(--text-main)',
-                maxWidth: 280,
-                outline: 'none'
-              }}
-            >
-              {documents.map(d => (
-                <option key={d.id} value={d.id}>
-                  {d.title} ({d.section_count || 0} secs)
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Document Display / Picker */}
+          {documents && documents.length > 1 && !documentId ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>📄 Policy:</span>
+              <select
+                value={selectedDocId}
+                onChange={e => {
+                  setSelectedDocId(e.target.value);
+                  setCurrentAnswer(null);
+                }}
+                style={{
+                  padding: '7px 12px',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border)',
+                  backgroundColor: '#ffffff',
+                  color: 'var(--text-main)',
+                  maxWidth: 240,
+                  outline: 'none'
+                }}
+              >
+                {documents.map(d => (
+                  <option key={d.id} value={d.id}>
+                    {d.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              backgroundColor: '#f1f5f9',
+              border: '1px solid #e2e8f0',
+              padding: '5px 12px',
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 600,
+              color: '#334155'
+            }}>
+              <span>📄 Document:</span>
+              <span style={{ color: 'var(--primary)', fontWeight: 700, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {displayTitle}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Suggested Quick Question Chips */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-          {lang === 'kn' ? '💡 ಜನಪ್ರಿಯ ಪ್ರಶ್ನೆಗಳು:' : '💡 Suggested Citizen Questions:'}
+          {lang === 'kn' ? '💡 ಜನಪ್ರಿಯ ಪ್ರಶ್ನೆಗಳು (ಕ್ಲಿಕ್ ಮಾಡಿ):' : '💡 Suggested Citizen Questions (Click to Ask):'}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {SUGGESTED_QUESTIONS.map(q => (
@@ -265,7 +315,7 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
       </div>
 
       {/* Custom Question Input Bar */}
-      <form onSubmit={e => { e.preventDefault(); handleAsk(); }} style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+      <form onSubmit={e => { e.preventDefault(); handleAsk(); }} style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 16, color: '#94a3b8' }}>
             🔍
@@ -275,12 +325,12 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
             value={question}
             onChange={e => setQuestion(e.target.value)}
             placeholder={lang === 'kn' 
-              ? 'ಈ ನೀತಿಯ ಬಗ್ಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ (ಉದಾ: ದಂಡಗಳು ಎಷ್ಟು?)...'
+              ? 'ಈ ನೀತಿಯ ಬಗ್ಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ (ಉದಾ: ದಂಡಗಳು ಎಷ್ಟು? ಯಾರ ಮೇಲೆ ಪರಿಣಾಮ?)...'
               : 'Ask any question about this policy (e.g., "What are the penalties?", "Who enforces this?")...'
             }
             style={{
               width: '100%',
-              padding: '12px 16px 12px 42px',
+              padding: '11px 16px 11px 40px',
               fontSize: 14,
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border)',
@@ -316,8 +366,8 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
           disabled={loading || !question.trim()}
           className="btn-primary"
           style={{
-            padding: '12px 24px',
-            fontSize: 14,
+            padding: '11px 22px',
+            fontSize: 13,
             fontWeight: 700,
             whiteSpace: 'nowrap',
             display: 'flex',
@@ -329,7 +379,7 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
         >
           {loading ? (
             <>
-              <div className="spinner" style={{ width: 16, height: 16, borderTopColor: '#ffffff' }}></div>
+              <div className="spinner" style={{ width: 14, height: 14, borderTopColor: '#ffffff' }}></div>
               <span>Analyzing...</span>
             </>
           ) : (
@@ -363,7 +413,7 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
           borderRadius: 'var(--radius-md)',
           border: '1px solid #e2e8f0',
           boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-          padding: '24px 28px'
+          padding: '22px 24px'
         }}>
           {/* Top Metadata & Voice Bar */}
           <div style={{
@@ -372,7 +422,7 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
             justifyContent: 'space-between',
             flexWrap: 'wrap',
             gap: 12,
-            paddingBottom: 16,
+            paddingBottom: 14,
             borderBottom: '1px solid #f1f5f9',
             marginBottom: 16
           }}>
@@ -413,7 +463,7 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
           </div>
 
           {/* Citizen Question Display */}
-          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)', marginBottom: 12, lineHeight: 1.3 }}>
+          <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-main)', marginBottom: 12, lineHeight: 1.3 }}>
             “{currentAnswer.question}”
           </div>
 
@@ -426,20 +476,20 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
             borderLeft: '4px solid var(--primary)',
             padding: '14px 18px',
             borderRadius: '0 8px 8px 0',
-            marginBottom: 20
+            marginBottom: 18
           }}>
             {currentAnswer.answer}
           </div>
 
           {/* Key Bullet Points / Takeaways */}
           {currentAnswer.key_points && currentAnswer.key_points.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
                 ⚡ Key Policy Takeaways:
               </div>
               <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {currentAnswer.key_points.map((pt, idx) => (
-                  <li key={idx} style={{ fontSize: 14, color: '#334155', lineHeight: 1.5 }}>
+                  <li key={idx} style={{ fontSize: 13.5, color: '#334155', lineHeight: 1.5 }}>
                     {pt}
                   </li>
                 ))}
@@ -451,8 +501,8 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
           {currentAnswer.evidence && currentAnswer.evidence.length > 0 && (
             <div style={{
               borderTop: '1px dashed #cbd5e1',
-              paddingTop: 18,
-              marginTop: 18
+              paddingTop: 16,
+              marginTop: 16
             }}>
               <div style={{
                 display: 'flex',
@@ -462,7 +512,7 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 15 }}>📜</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                     Verified Evidence from Source Document
                   </span>
                 </div>
@@ -471,14 +521,14 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
                 </span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {currentAnswer.evidence.map((ev, i) => (
                   <div
                     key={i}
                     style={{
                       border: '1px solid #e2e8f0',
                       borderRadius: 8,
-                      padding: 14,
+                      padding: 12,
                       backgroundColor: '#f8fafc',
                       transition: 'border-color 0.15s'
                     }}
@@ -498,7 +548,7 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
                       {onOpenEvidence && ev.section_id && (
                         <button
                           type="button"
-                          onClick={() => onOpenEvidence(null, ev.section_id, `Page ${ev.page || 1}`, ev.section_heading || 'Section Citation', selectedDocId)}
+                          onClick={() => onOpenEvidence(analysisId || null, ev.section_id, `Page ${ev.page || 1}`, ev.section_heading || 'Section Citation', activeDocId)}
                           style={{
                             fontSize: 12,
                             fontWeight: 700,
@@ -548,9 +598,9 @@ export default function PolicyQA({ documents = [], onOpenEvidence, onStartAnalys
 
       {/* Session History Tabs (allows comparing previous questions) */}
       {history.length > 1 && (
-        <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid #e2e8f0' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-            Recent Questions in this Session:
+            Recent Questions on this Document:
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {history.map((h, i) => (
