@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { runPipeline } = require('../pipeline/orchestrator');
 const { buildMilestonesForAnalysis, formatPlainTextTimeline } = require('./timeline');
+const { buildNeighborhoodImpacts } = require('./neighborhoodImpacts');
 
 /**
  * Safely parse a JSON column string, or return null.
@@ -289,6 +290,30 @@ router.get('/:id/timeline', (req, res) => {
     });
   } catch (err) {
     console.error('GET /api/analyses/:id/timeline error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ──────────────────────────────────────────────
+// GET /api/analyses/:id/neighborhood-impacts
+// Returns 6-dimension infrastructure impact assessment
+// ──────────────────────────────────────────────
+router.get('/:id/neighborhood-impacts', (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const analysis = db.prepare('SELECT * FROM analyses WHERE id = ?').get(id);
+    if (!analysis) {
+      return res.status(404).json({ error: 'Analysis not found.' });
+    }
+
+    const doc = db.prepare('SELECT * FROM documents WHERE id = ?').get(analysis.document_id);
+    const sections = db.prepare('SELECT * FROM document_sections WHERE document_id = ? ORDER BY order_index ASC').all(analysis.document_id);
+
+    const assessment = buildNeighborhoodImpacts(analysis, doc, sections);
+    res.json(assessment);
+  } catch (err) {
+    console.error('GET /api/analyses/:id/neighborhood-impacts error:', err);
     res.status(500).json({ error: err.message });
   }
 });

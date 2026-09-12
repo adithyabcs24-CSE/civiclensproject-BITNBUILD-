@@ -4,6 +4,7 @@ const { router: documentsRouter } = require('./routes/documents');
 const analysesRouter = require('./routes/analyses');
 const alertsRouter = require('./routes/alerts');
 const { router: timelineRouter } = require('./routes/timeline');
+const { router: neighborhoodImpactsRouter } = require('./routes/neighborhoodImpacts');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -21,6 +22,7 @@ app.use('/api/documents', documentsRouter);
 app.use('/api/analyses', analysesRouter);
 app.use('/api/alerts', alertsRouter);
 app.use('/api/timeline', timelineRouter);
+app.use('/api/neighborhood-impacts', neighborhoodImpactsRouter);
 
 // Serve built React frontend from frontend/dist
 const path = require('path');

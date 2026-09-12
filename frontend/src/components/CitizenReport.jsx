@@ -5,6 +5,7 @@ import CivicCalculators from './CivicCalculators';
 import EvidenceLineageGraph from './EvidenceLineageGraph';
 import PolicyQA from './PolicyQA';
 import CivicTimeline from './CivicTimeline';
+import NeighborhoodImpactAssessment from './NeighborhoodImpactAssessment';
 
 const CATEGORY_COLORS = {
   housing: { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', icon: '🏠' },
@@ -35,6 +36,7 @@ const TRANSLATIONS = {
     disclaimerText: 'CivicLens AI provides informational summaries only and is not a substitute for reviewing official government documents or consulting your local government office.',
     tabs: {
       overview: '📊 Overview & Impacts',
+      infrastructure: '🏗️ Neighborhood Assessment',
       timeline: '📅 Civic Timeline',
       qa: '🧠 Ask Questions About Policies',
       map: '🗺️ Civic Map & Hotspots',
@@ -65,6 +67,7 @@ const TRANSLATIONS = {
     disclaimerText: 'ಸಿವಿಕ್ಲೆನ್ಸ್ AI ಮಾಹಿತಿ ಉದ್ದೇಶಗಳಿಗಾಗಿ ಮಾತ್ರ ಸಾರಾಂಶಗಳನ್ನು ಒದಗಿಸುತ್ತದೆ ಮತ್ತು ಅಧಿಕೃತ ಸರ್ಕಾರಿ ದಾಖಲೆಗಳು ಅಥವಾ ಕಚೇರಿಗಳನ್ನು ಸಂಪರ್ಕಿಸುವುದಕ್ಕೆ ಬದಲಿಯಾಗಿರುವುದಿಲ್ಲ.',
     tabs: {
       overview: '📊 ವರದಿ ಮತ್ತು ಪರಿಣಾಮಗಳು',
+      infrastructure: '🏗️ ಮೂಲಸೌಕರ್ಯ ಮೌಲ್ಯಮಾಪನ',
       timeline: '📅 ಕಾಲಾನುಕ್ರಮ ವೇಳಾಪಟ್ಟಿ',
       qa: '🧠 ನೀತಿಗಳ ಬಗ್ಗೆ ಪ್ರಶ್ನೆಗಳು',
       map: '🗺️ ನಕ್ಷೆ ಮತ್ತು ವಲಯಗಳು',
@@ -586,6 +589,17 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
         </button>
         <button
           type="button"
+          onClick={() => setActiveTab('infrastructure')}
+          className={`civic-tab-btn ${activeTab === 'infrastructure' ? 'active' : ''}`}
+          style={{
+            borderColor: activeTab === 'infrastructure' ? 'var(--primary)' : undefined,
+            fontWeight: 700
+          }}
+        >
+          {t.tabs.infrastructure}
+        </button>
+        <button
+          type="button"
           onClick={() => setActiveTab('timeline')}
           className={`civic-tab-btn ${activeTab === 'timeline' ? 'active' : ''}`}
           style={{
@@ -635,6 +649,16 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
           {t.tabs.calculators}
         </button>
       </div>
+
+      {/* VIEW: NEIGHBORHOOD IMPACT ASSESSMENT (DEDICATED TAB) */}
+      {activeTab === 'infrastructure' && (
+        <div className="animate-fade">
+          <NeighborhoodImpactAssessment
+            analysisId={analysisId}
+            onOpenEvidence={onOpenEvidence}
+          />
+        </div>
+      )}
 
       {/* VIEW: CIVIC TIMELINE (DEDICATED TAB) */}
       {activeTab === 'timeline' && (
@@ -829,6 +853,12 @@ export default function CitizenReport({ analysisId, onBack, onOpenEvidence }) {
               </div>
             </div>
           )}
+
+          {/* Neighborhood Impact Assessment (Agent 4 Civil Infrastructure Synthesis) */}
+          <NeighborhoodImpactAssessment
+            analysisId={analysisId}
+            onOpenEvidence={onOpenEvidence}
+          />
 
           {/* Localized Impacts Section */}
           <div style={{ marginBottom: 28 }}>
